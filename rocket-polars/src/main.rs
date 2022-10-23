@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate rocket;
+use std::time::{Duration, SystemTime};
 use polars::prelude::*;
 use serde_json::Value;
 
@@ -25,9 +26,15 @@ pub fn df_to_json(df: &DataFrame) -> Value {
 
 #[get("/")]
 pub async fn get_data() -> Value {
+    let now = SystemTime::now();
     let raw_df = csv_to_df("../data.csv").unwrap();
+    let loading = now.elapsed();
     let df = raw_df.slice(0, 50000);
-    df_to_json(&df)
+    let slicing = now.elapsed();
+    let to_return = df_to_json(&df);
+    let converting = now.elapsed();
+    println!("Loading: {:?}, Slicing: {:?}, Converting: {:?}", loading, slicing, converting);
+    to_return
 }
 
 
