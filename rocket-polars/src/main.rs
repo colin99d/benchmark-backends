@@ -8,9 +8,10 @@ use serde_json::Value;
 pub fn csv_to_df(path: &str) -> DataFrame {
     LazyCsvReader::new(Path::new(path))
         .has_header(true)
-        .with_n_rows(Some(5000))
+        // .with_n_rows(Some(50_000))
         .finish()
         .unwrap()
+        .slice(0, 50_000)
         .collect()
         .unwrap()
         //.filter(col("bar").gt(lit(100)))
@@ -35,11 +36,9 @@ pub async fn get_data() -> Value {
     let now = SystemTime::now();
     let raw_df = csv_to_df("../data.csv");
     let loading = now.elapsed();
-    let df = raw_df.slice(0, 50000);
-    let slicing = now.elapsed();
-    let to_return = df_to_json(&df);
+    let to_return = df_to_json(&raw_df);
     let converting = now.elapsed();
-    println!("Loading: {:?}, Slicing: {:?}, Converting: {:?}", loading, slicing, converting);
+    println!("Loading: {:?}, Converting: {:?}", loading, converting);
     to_return
 }
 
