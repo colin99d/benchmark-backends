@@ -1,14 +1,20 @@
 #[macro_use]
 extern crate rocket;
-use std::time::{Duration, SystemTime};
+use std::time::{SystemTime};
+use std::path::Path;
 use polars::prelude::*;
 use serde_json::Value;
 
-pub fn csv_to_df(path: &str) -> PolarsResult<DataFrame> {
-    CsvReader::from_path(path)?
+pub fn csv_to_df(path: &str) -> DataFrame {
+    LazyCsvReader::new(Path::new(path))
         .has_header(true)
-        .finish()?
-        .with_row_count("Id", None)
+        .with_n_rows(Some(5000))
+        .finish()
+        .unwrap()
+        .collect()
+        .unwrap()
+        //.filter(col("bar").gt(lit(100)))
+        // .with_row_count("Id", None)
 }
 
 pub fn df_to_json(df: &DataFrame) -> Value {
@@ -27,7 +33,7 @@ pub fn df_to_json(df: &DataFrame) -> Value {
 #[get("/")]
 pub async fn get_data() -> Value {
     let now = SystemTime::now();
-    let raw_df = csv_to_df("../data.csv").unwrap();
+    let raw_df = csv_to_df("../data.csv");
     let loading = now.elapsed();
     let df = raw_df.slice(0, 50000);
     let slicing = now.elapsed();
