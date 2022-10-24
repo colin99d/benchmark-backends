@@ -35,10 +35,10 @@ pub fn df_to_json(df: &DataFrame) -> Value {
 pub async fn get_data() -> Value {
     let now = SystemTime::now();
     let raw_df = csv_to_df("../data.csv");
-    let loading = now.elapsed();
+    let loading = now.elapsed().unwrap();
     let to_return = df_to_json(&raw_df);
-    let converting = now.elapsed();
-    println!("Loading: {:?}, Converting: {:?}", loading, converting);
+    let converting = now.elapsed().unwrap();
+    println!("Loading: {:?}, Converting: {:?}", loading, converting - loading);
     to_return
 }
 
