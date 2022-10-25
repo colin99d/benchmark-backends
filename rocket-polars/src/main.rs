@@ -3,7 +3,6 @@ extern crate rocket;
 use std::time::{SystemTime};
 use std::path::Path;
 use polars::prelude::*;
-use serde_json::Value;
 
 pub fn csv_to_df(path: &str) -> DataFrame {
     LazyCsvReader::new(Path::new(path))
@@ -18,7 +17,7 @@ pub fn csv_to_df(path: &str) -> DataFrame {
         // .with_row_count("Id", None)
 }
 
-pub fn df_to_json(df: &DataFrame) -> Value {
+pub fn df_to_json(df: &DataFrame) -> String {
     let mut buffer = Vec::new();
 
     JsonWriter::new(&mut buffer)
@@ -27,12 +26,13 @@ pub fn df_to_json(df: &DataFrame) -> Value {
         .unwrap();
 
     let json_string = String::from_utf8(buffer).unwrap();
-    serde_json::from_str(&json_string).unwrap()
+    json_string
+    // serde_json::from_str(&json_string).unwrap()
 }
 
 
 #[get("/")]
-pub async fn get_data() -> Value {
+pub async fn get_data() -> String {
     let now = SystemTime::now();
     let raw_df = csv_to_df("../data.csv");
     let loading = now.elapsed().unwrap();

@@ -1715,7 +1715,6 @@ version = "0.1.0"
 dependencies = [
  "polars",
  "rocket",
- "serde_json",
 ]
 
 [[package]]
