@@ -20,12 +20,18 @@ pub fn csv_to_df(path: &str) -> DataFrame {
 pub fn df_to_json(df: &DataFrame) -> String {
     let mut buffer = Vec::new();
 
+    let now = SystemTime::now();
     JsonWriter::new(&mut buffer)
         .with_json_format(JsonFormat::Json)
         .finish(&mut df.clone())
         .unwrap();
+    let to_json = now.elapsed().unwrap();
 
-    String::from_utf8(buffer).unwrap()
+    let the_string = String::from_utf8(buffer).unwrap();
+
+    let to_string = now.elapsed().unwrap();
+    println!("To JSON: {:?}, To String: {:?}", to_json, to_string - to_json);
+    the_string
 }
 
 
