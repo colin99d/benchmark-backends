@@ -3,11 +3,11 @@ extern crate rocket;
 use std::time::{SystemTime};
 use std::path::Path;
 use polars::prelude::*;
+use rocket::http::ContentType;
 
 pub fn csv_to_df(path: &str) -> DataFrame {
     LazyCsvReader::new(Path::new(path))
         .has_header(true)
-        // .with_n_rows(Some(50_000))
         .finish()
         .unwrap()
         .slice(0, 50_000)
@@ -25,21 +25,19 @@ pub fn df_to_json(df: &DataFrame) -> String {
         .finish(&mut df.clone())
         .unwrap();
 
-    let json_string = String::from_utf8(buffer).unwrap();
-    json_string
-    // serde_json::from_str(&json_string).unwrap()
+    String::from_utf8(buffer).unwrap()
 }
 
 
 #[get("/")]
-pub async fn get_data() -> String {
+pub async fn get_data() -> (ContentType, String) {
     let now = SystemTime::now();
     let raw_df = csv_to_df("../data.csv");
     let loading = now.elapsed().unwrap();
     let to_return = df_to_json(&raw_df);
     let converting = now.elapsed().unwrap();
     println!("Loading: {:?}, Converting: {:?}", loading, converting - loading);
-    to_return
+    (ContentType::JSON, to_return)
 }
 
 
